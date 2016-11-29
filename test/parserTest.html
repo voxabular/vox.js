@@ -10,6 +10,7 @@
 
 var parser = new vox.Parser();
 parser.parse("./vox/mv0.97/chr_fox.vox").then(function(data) {
+    console.log(data);
     console.assert(data.size instanceof Object,             "data.size instanceof Object");
     console.assert(typeof(data.size.x) === 'number',        "typeof(data.size.x) === 'number'");
     console.assert(typeof(data.size.y) === 'number',        "typeof(data.size.y) === 'number'");
@@ -29,6 +30,7 @@ parser.parse("./vox/mv0.97/chr_fox.vox").then(function(data) {
     console.log("parse ok");
 });
 parser.parse("./vox/mv0.98/p60.vox").then(function(data) {
+    console.log(data);
     console.assert(data.size instanceof Object,             "data.size instanceof Object");
     console.assert(typeof(data.size.x) === 'number',        "typeof(data.size.x) === 'number'");
     console.assert(typeof(data.size.y) === 'number',        "typeof(data.size.y) === 'number'");
@@ -47,10 +49,10 @@ parser.parse("./vox/mv0.98/p60.vox").then(function(data) {
     console.assert(typeof(data.palette[0].a) === 'number',  "typeof(data.palette[0].a) === 'number'");
     console.log("parse ok");
 });
-// parser.parse("./parserTest.html").catch(function(error) {
-//     console.assert(error !== null, "error !== null");
-//     console.log("error ok");
-// });
+parser.parse("./parserTest.html").catch(function(error) {
+    console.assert(error !== null, "error !== null");
+    console.log("error ok");
+});
 
 </script>
 

@@ -56,8 +56,10 @@
         var dataHolder = new DataHolder(uint8Array);
         try {
             root(dataHolder);
+            dataHolder.data.size = dataHolder.data.anim[0].size;
+            dataHolder.data.voxels = dataHolder.data.anim[0].voxels;
             if (dataHolder.data.palette.length === 0) {
-                console.debug("(use default palette)");
+                // console.debug("(use default palette)");
                 dataHolder.data.palette = vox.defaultPalette;
             } else {
                 dataHolder.data.palette.unshift(dataHolder.data.palette[0]);
@@ -132,7 +134,7 @@
         dataHolder._currentChunkId = id;
         dataHolder._currentChunkSize = 0;
         
-        console.debug("chunk id = " + id);
+        // console.debug("chunk id = " + id);
     };
     
     var sizeOfChunkContents = function(dataHolder) {
@@ -142,7 +144,7 @@
         }
         dataHolder._currentChunkSize = size;
         
-        console.debug("  size of chunk = " + size);
+        // console.debug("  size of chunk = " + size);
     };
     
     var totalSizeOfChildrenChunks = function(dataHolder) {
@@ -151,7 +153,7 @@
             size += dataHolder.next() * Math.pow(256, i);
         }
         
-        console.debug("  total size of children chunks = " + size);
+        // console.debug("  total size of children chunks = " + size);
     };
     
     var contents = function(dataHolder) {
@@ -180,7 +182,7 @@
             size += dataHolder.next() * Math.pow(256, i);
         }
         
-        console.debug("  num of SIZE and XYZI chunks = " + size);
+        // console.debug("  num of SIZE and XYZI chunks = " + size);
     };
     
     var contentsOfSizeChunk = function(dataHolder) {
@@ -196,8 +198,14 @@
         for (var i = 0; i < 4; i++) {
             z += dataHolder.next() * Math.pow(256, i);
         }
-        console.debug("  bounding box size = " + x + ", " + y + ", " + z);
-        dataHolder.data.size = {
+        // console.debug("  bounding box size = " + x + ", " + y + ", " + z);
+
+        var data = dataHolder.data.anim[dataHolder.data.anim.length - 1];
+        if (data.size) {
+            data = { size: null, voxels: [] };
+            dataHolder.data.anim.push(data);
+        }
+        data.size = {
             x: x,
             y: y,
             z: z,
@@ -209,9 +217,15 @@
         for (var i = 0; i < 4; i++) {
             num += dataHolder.next() * Math.pow(256, i);
         }
-        console.debug("  voxel size = " + num);
+        // console.debug("  voxel size = " + num);
+
+        var data = dataHolder.data.anim[dataHolder.data.anim.length - 1];
+        if (data.voxels.length) {
+            data = { size: null, voxels: [] };
+            dataHolder.data.anim.push(data);
+        }
         for (var i = 0; i < num; i++) {
-            dataHolder.data.voxels.push({
+            data.voxels.push({
                 x: dataHolder.next(),
                 y: dataHolder.next(),
                 z: dataHolder.next(),
@@ -221,7 +235,7 @@
     };
 
     var contentsOfPaletteChunk = function(dataHolder) {
-        console.debug("  palette");
+        // console.debug("  palette");
         for (var i = 0; i < 256; i++) {
             var p = {
                 r: dataHolder.next(),
@@ -234,30 +248,30 @@
     };
     
     var contentsOfMaterialChunk = function(dataHolder) {
-        console.debug("  material");
+        // console.debug("  material");
         var id = 0;
         for (var i = 0; i < 4; i++) {
             id += dataHolder.next() * Math.pow(256, i);
         }
-        console.debug("    id = " + id);
+        // console.debug("    id = " + id);
 
         var type = 0;
         for (var i = 0; i < 4; i++) {
             type += dataHolder.next() * Math.pow(256, i);
         }
-        console.debug("    type = " + type + " (0:diffuse 1:metal 2:glass 3:emissive)");
+        // console.debug("    type = " + type + " (0:diffuse 1:metal 2:glass 3:emissive)");
 
         var weight = 0;
         for (var i = 0; i < 4; i++) {
             weight += dataHolder.next() * Math.pow(256, i);
         }
-        console.debug("    weight = " + parseFloat(weight));
+        // console.debug("    weight = " + parseFloat(weight));
 
         var propertyBits = 0;
         for (var i = 0; i < 4; i++) {
             propertyBits += dataHolder.next() * Math.pow(256, i);
         }
-        console.debug("    property bits = " + propertyBits.toString(2));
+        // console.debug("    property bits = " + propertyBits.toString(2));
         var plastic = !!(propertyBits & 1);
         var roughness = !!(propertyBits & 2);
         var specular = !!(propertyBits & 4);
@@ -266,14 +280,14 @@
         var power = !!(propertyBits & 32);
         var glow = !!(propertyBits & 64);
         var isTotalPower = !!(propertyBits & 128);
-        console.debug("      Plastic = " + plastic);
-        console.debug("      Roughness = " + roughness);
-        console.debug("      Specular = " + specular);
-        console.debug("      IOR = " + ior);
-        console.debug("      Attenuation = " + attenuation);
-        console.debug("      Power = " + power);
-        console.debug("      Glow = " + glow);
-        console.debug("      isTotalPower = " + isTotalPower);
+        // console.debug("      Plastic = " + plastic);
+        // console.debug("      Roughness = " + roughness);
+        // console.debug("      Specular = " + specular);
+        // console.debug("      IOR = " + ior);
+        // console.debug("      Attenuation = " + attenuation);
+        // console.debug("      Power = " + power);
+        // console.debug("      Glow = " + glow);
+        // console.debug("      isTotalPower = " + isTotalPower);
 
         var valueNum = 0;
         if (plastic) valueNum += 1;
@@ -291,7 +305,7 @@
             for (var i = 0; i < 4; i++) {
                 values[j] += dataHolder.next() * Math.pow(256, i);
             }
-            console.debug("    normalized property value = " + parseFloat(values[j]));
+            // console.debug("    normalized property value = " + parseFloat(values[j]));
         }
     };
     
