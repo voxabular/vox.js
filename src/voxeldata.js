@@ -7,13 +7,14 @@
      * @property {Array} palette [{r, g, b, a}...]
      */
     vox.VoxelData = function() {
-        this.size = {
-            x: 0,
-            y: 0,
-            z: 0
-        };
+        this.size = null;
         this.voxels = [];
         this.palette = [];
+        
+        this.anim = [{
+            size: null,
+            voxels: [],
+        }];
     };
     
 })();
