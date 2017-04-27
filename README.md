@@ -2,6 +2,8 @@
 
 ## Example
 
+[![Join the chat at https://gitter.im/daishihmr/vox.js](https://badges.gitter.im/daishihmr/vox.js.svg)](https://gitter.im/daishihmr/vox.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [show mesh](http://daishihmr.github.io/vox.js/test/meshbuilderTest.html)
 
 [update texture](http://daishihmr.github.io/vox.js/test/textureTest.html)
