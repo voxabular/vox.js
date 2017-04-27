@@ -1,8 +1,8 @@
 [MagicaVoxel](https://ephtracy.github.io/) model data parser and mesh builder.
 
-## Example
-
 [![Join the chat at https://gitter.im/daishihmr/vox.js](https://badges.gitter.im/daishihmr/vox.js.svg)](https://gitter.im/daishihmr/vox.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+## Example
 
 [show mesh](http://daishihmr.github.io/vox.js/test/meshbuilderTest.html)
 
