@@ -88,7 +88,6 @@ var vox = {};
 })();
 
 (function() {
-    
     /** 
      * @constructor
      */
@@ -168,6 +167,9 @@ var vox = {};
         
         this._currentChunkId = null;
         this._currentChunkSize = 0;
+
+        this._contentsArray = null;
+        this._contentsCursor = 0;
     };
     DataHolder.prototype.next = function() {
         if (this.uint8Array.byteLength <= this.cursor) {
@@ -177,6 +179,15 @@ var vox = {};
     };
     DataHolder.prototype.hasNext = function() {
         return this.cursor < this.uint8Array.byteLength;
+    };
+    DataHolder.prototype.nextContent = function() {
+        if (this._contentsArray.byteLength <= this._contentsCursor) {
+            throw new Error("_contentsArray index out of bounds: " + this._contentsArray.byteLength);
+        }
+        return this._contentsArray[this._contentsCursor++];
+    };
+    DataHolder.prototype.hasNextContent = function() {
+        return this._contentsCursor < this._contentsArray.byteLength;
     };
     
     var root = function(dataHolder) {
@@ -210,7 +221,10 @@ var vox = {};
         chunkId(dataHolder);
         sizeOfChunkContents(dataHolder);
         totalSizeOfChildrenChunks(dataHolder);
-        contents(dataHolder);
+        dataHolder._contentsCursor = 0;
+        dataHolder._contentsArray = getContentsArray(dataHolder);
+        // console.debug("  contentsArray.length = " + dataHolder._contentsArray.length);
+        parseContents(dataHolder);
         while (chunk(dataHolder));
         return dataHolder.hasNext();
     };
@@ -244,8 +258,16 @@ var vox = {};
         
         // console.debug("  total size of children chunks = " + size);
     };
+
+    var getContentsArray = function(dataHolder) {
+        var array = new Uint8Array(dataHolder._currentChunkSize);
+        for (var i = 0; i < array.length; i++) {
+            array[i] = dataHolder.next();
+        }
+        return array;
+    };
     
-    var contents = function(dataHolder) {
+    var parseContents = function(dataHolder) {
         switch (dataHolder._currentChunkId) {
         case "PACK":
             contentsOfPackChunk(dataHolder);
@@ -262,13 +284,16 @@ var vox = {};
         case "MATT":
             contentsOfMaterialChunk(dataHolder);
             break;
+        default:
+            unsupportedChunkType(dataHolder);
+            break;
         }
     };
     
     var contentsOfPackChunk = function(dataHolder) {
         var size = 0;
         for (var i = 0; i < 4; i++) {
-            size += dataHolder.next() * Math.pow(256, i);
+            size += dataHolder.nextContent() * Math.pow(256, i);
         }
         
         // console.debug("  num of SIZE and XYZI chunks = " + size);
@@ -277,15 +302,15 @@ var vox = {};
     var contentsOfSizeChunk = function(dataHolder) {
         var x = 0;
         for (var i = 0; i < 4; i++) {
-            x += dataHolder.next() * Math.pow(256, i);
+            x += dataHolder.nextContent() * Math.pow(256, i);
         }
         var y = 0;
         for (var i = 0; i < 4; i++) {
-            y += dataHolder.next() * Math.pow(256, i);
+            y += dataHolder.nextContent() * Math.pow(256, i);
         }
         var z = 0;
         for (var i = 0; i < 4; i++) {
-            z += dataHolder.next() * Math.pow(256, i);
+            z += dataHolder.nextContent() * Math.pow(256, i);
         }
         // console.debug("  bounding box size = " + x + ", " + y + ", " + z);
 
@@ -304,7 +329,7 @@ var vox = {};
     var contentsOfVoxelChunk = function(dataHolder) {
         var num = 0;
         for (var i = 0; i < 4; i++) {
-            num += dataHolder.next() * Math.pow(256, i);
+            num += dataHolder.nextContent() * Math.pow(256, i);
         }
         // console.debug("  voxel size = " + num);
 
@@ -315,10 +340,10 @@ var vox = {};
         }
         for (var i = 0; i < num; i++) {
             data.voxels.push({
-                x: dataHolder.next(),
-                y: dataHolder.next(),
-                z: dataHolder.next(),
-                colorIndex: dataHolder.next(),
+                x: dataHolder.nextContent(),
+                y: dataHolder.nextContent(),
+                z: dataHolder.nextContent(),
+                colorIndex: dataHolder.nextContent(),
             });
         }
     };
@@ -327,10 +352,10 @@ var vox = {};
         // console.debug("  palette");
         for (var i = 0; i < 256; i++) {
             var p = {
-                r: dataHolder.next(),
-                g: dataHolder.next(),
-                b: dataHolder.next(),
-                a: dataHolder.next(),
+                r: dataHolder.nextContent(),
+                g: dataHolder.nextContent(),
+                b: dataHolder.nextContent(),
+                a: dataHolder.nextContent(),
             };
             dataHolder.data.palette.push(p);
         }
@@ -340,25 +365,25 @@ var vox = {};
         // console.debug("  material");
         var id = 0;
         for (var i = 0; i < 4; i++) {
-            id += dataHolder.next() * Math.pow(256, i);
+            id += dataHolder.nextContent() * Math.pow(256, i);
         }
         // console.debug("    id = " + id);
 
         var type = 0;
         for (var i = 0; i < 4; i++) {
-            type += dataHolder.next() * Math.pow(256, i);
+            type += dataHolder.nextContent() * Math.pow(256, i);
         }
         // console.debug("    type = " + type + " (0:diffuse 1:metal 2:glass 3:emissive)");
 
         var weight = 0;
         for (var i = 0; i < 4; i++) {
-            weight += dataHolder.next() * Math.pow(256, i);
+            weight += dataHolder.nextContent() * Math.pow(256, i);
         }
         // console.debug("    weight = " + parseFloat(weight));
 
         var propertyBits = 0;
         for (var i = 0; i < 4; i++) {
-            propertyBits += dataHolder.next() * Math.pow(256, i);
+            propertyBits += dataHolder.nextContent() * Math.pow(256, i);
         }
         // console.debug("    property bits = " + propertyBits.toString(2));
         var plastic = !!(propertyBits & 1);
@@ -392,11 +417,13 @@ var vox = {};
         for (var j = 0; j < valueNum; j++) {
             values[j] = 0;
             for (var i = 0; i < 4; i++) {
-                values[j] += dataHolder.next() * Math.pow(256, i);
+                values[j] += dataHolder.nextContent() * Math.pow(256, i);
             }
             // console.debug("    normalized property value = " + parseFloat(values[j]));
         }
     };
+
+    var unsupportedChunkType = function(dataHolder) {};
     
     var parseFloat = function(bytes) {
         var bin = bytes.toString(2);

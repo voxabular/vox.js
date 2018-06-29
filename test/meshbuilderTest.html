@@ -22,11 +22,11 @@ window.onload = function() {
     var scene = new THREE.Scene();
 
     var camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000);
-    var cameraTarget = new THREE.Vector3(0, 60, 0);
+    var cameraTarget = new THREE.Vector3(0, 10, 0);
     updateListeners.push(function(frame) {
-        camera.position.x = Math.cos(frame * 0.004) * 200;
-        camera.position.y = 120;
-        camera.position.z = Math.sin(frame * 0.004) * 200;
+        camera.position.x = Math.cos(frame * 0.004) * 50;
+        camera.position.y = 15;
+        camera.position.z = Math.sin(frame * 0.004) * 50;
         camera.lookAt(cameraTarget);
     });
     
@@ -56,7 +56,8 @@ window.onload = function() {
 
     var parser = new vox.Parser();
     var parseTasks = [
-        "vox/largedata.vox",
+        // "vox/mv0.98/p20.vox",
+        "vox/mv0.99.1/p20.vox",
     ].map(function(path) {
         return parser.parse(path);
     });
