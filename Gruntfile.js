@@ -1,6 +1,8 @@
+var package = require("./package.json");
+
 var BANNER = [
   "/*",
-  " * vox.js ",
+  " * vox.js " + package.version,
   " * https://github.com/daishihmr/vox.js",
   " * ",
   " * The MIT License (MIT)",
