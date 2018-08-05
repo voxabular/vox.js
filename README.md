@@ -82,3 +82,7 @@ document.getElementById("img").src = canvas.toDataURL();
 ## API Reference
 
 [http://daishihmr.github.io/vox.js/docs/](http://daishihmr.github.io/vox.js/docs/)
+
+## TODO
+
+* saving function
