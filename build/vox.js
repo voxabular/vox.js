@@ -29,6 +29,10 @@
  */
 var vox = {};
 
+if (typeof(require) !== "undefined") {
+    const THREE = require('three-js')([]);
+}
+
 (function() {
     if (typeof(window) !== "undefined") {
         vox.global = window;
