@@ -218,6 +218,9 @@
         case "MATL":
             contentsOfMaterialExChunk(dataHolder);
             break;
+        case "LAYR":
+            contentsOfLayerChunk(dataHolder);
+            break;
         default:
             unsupportedChunkType(dataHolder);
             break;
@@ -388,6 +391,14 @@
 
         debugLog("  materialId = " + materialId);
         debugLog("  properties", properties);
+    };
+
+    var contentsOfLayerChunk = function(dataHolder) {
+        var layerId = dataHolder.parseInt32();
+        var attributes = dataHolder.parseDict();
+
+        debugLog("  layerId = " + layerId);
+        debugLog("  attributes", attributes);
     };
 
     var unsupportedChunkType = function(dataHolder) {};
