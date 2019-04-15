@@ -55,11 +55,16 @@ var vox = {};
         this.size = null;
         this.voxels = [];
         this.palette = [];
-        
+        this.rootNode = [];
+
         this.anim = [{
             size: null,
             voxels: [],
         }];
+
+        this.transform = [];
+        this.group = [];
+        this.shape = [];
     };
     
 })();
@@ -154,10 +159,128 @@ var vox = {};
                 dataHolder.data.palette.pop();
             }
 
+            if (dataHolder.data.transform.length > 0) {
+                dataHolder.data.rootNode = transformNode(dataHolder.data.transform[0]);
+                search('transform', dataHolder.data.rootNode, dataHolder);
+                debugLog("Root Node: ", dataHolder.data.rootNode);
+            }
+
             callback(null, dataHolder.data);
         } catch (e) {
             callback(e);
         }
+    };
+
+    var search = function(currentType, currentNode, dataHolder) {
+        switch (currentType) {
+            case 'transform':
+                var groupChildNode = dataHolder.data.group.filter(function(group) { return group.nodeId === currentNode.childNodeId })[0];
+                if(groupChildNode !== undefined) {
+                    currentNode.childNode = {
+                        type: 'group',
+                        nodeId: groupChildNode.nodeId,
+                        nodeAttributes: groupChildNode.nodeAttributes,
+                        childNodeIds: groupChildNode.childNodeIds,
+                        childNodes: []
+                    };
+                    return search('group', currentNode.childNode, dataHolder);
+                }
+
+                var shapeChildNode = dataHolder.data.shape.filter(function(shape) { return shape.nodeId === currentNode.childNodeId })[0];
+                return currentNode.childNode = {
+                    type: 'shape',
+                    nodeId: shapeChildNode.nodeId,
+                    nodeAttributes: shapeChildNode.nodeAttributes,
+                    modelId: shapeChildNode.modelIds[0],
+                    modelAttributes: dataHolder.data.anim[shapeChildNode.modelIds[0]]
+                };
+            case 'group':
+                currentNode.childNodes = [];
+                currentNode.childNodeIds.forEach(function(nodeId) {
+                    var transformChildNode = dataHolder.data.transform.filter(function(transform) { return transform.nodeId === nodeId })[0];
+                    currentNode.childNodes.push(transformNode(transformChildNode));
+                    return search('transform', currentNode.childNodes[currentNode.childNodes.length - 1], dataHolder);
+                });
+        }
+    };
+
+    var transformNode = function(transform) {
+        return {
+            type: 'transform',
+            nodeId: transform.nodeId,
+            nodeAttributes: {
+                name: transform.nodeAttributes._name || '',
+                hidden: transform.nodeAttributes._hidden || 0
+            },
+            childNodeId: transform.childNodeId,
+            childNode: null,
+            layerId: transform.layerId,
+            frameAttributes: {
+                rotation: rotationMatrix(transform.frameAttributes._r),
+                translation: translationMatrix(transform.frameAttributes._t)
+            }
+        }
+    };
+
+    var translationMatrix = function(translation) {
+        if(translation === undefined) { return { x: 0, z: 0, y: 0 } }
+        const translations = translation.split(' ');
+        return { x: parseInt(translations[0]), z: parseInt(translations[1]), y: parseInt(translations[2]) };
+    };
+
+    var rotationMatrix = function(rotation) {
+        if(rotation === undefined) {
+            return [
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ];
+        }
+
+        var target = parseInt(rotation);
+
+        var first = target & (1 << 4);
+        var second = target & (1 << 5);
+        var third = target & (1 << 6);
+
+        var a0 = (target & 1 << 0);
+        var b0 = (target & 1 << 1);
+        var firstIndex = a0 + b0;
+        var a1 = (target >> 2 & 1 << 0);
+        var b1 = (target >> 2 & 1 << 1);
+        var secondIndex = a1 + b1;
+
+        var thirdIndex = 0;
+        switch([firstIndex, secondIndex].join(' ')) {
+            case '0 1':
+                thirdIndex = 2;
+                break;
+            case '1 0':
+                thirdIndex = 2;
+                break;
+            case '0 2':
+                thirdIndex = 1;
+                break;
+            case '2 0':
+                thirdIndex = 1;
+                break;
+            case '1 2':
+                thirdIndex = 0;
+                break;
+            case '2 1':
+                thirdIndex = 0;
+                break;
+        }
+
+        var firstRow = [0, 0, 0];
+        var secondRow = [0, 0, 0];
+        var thirdRow = [0, 0, 0];
+
+        firstRow[firstIndex] = first === 0 ? 1 : -1;
+        secondRow[secondIndex] = second === 0 ? 1 : -1;
+        thirdRow[thirdIndex] = third === 0 ? 1 : -1;
+
+        return [ firstRow, secondRow, thirdRow ];
     };
     
     var DataHolder = function(uint8Array) {
@@ -307,6 +430,9 @@ var vox = {};
         case "MATL":
             contentsOfMaterialExChunk(dataHolder);
             break;
+        case "LAYR":
+            contentsOfLayerChunk(dataHolder);
+            break;
         default:
             unsupportedChunkType(dataHolder);
             break;
@@ -429,13 +555,15 @@ var vox = {};
             frameAttributes[i] = dataHolder.parseDict();
         }
 
-        debugLog("  nodeId = " + nodeId);
-        debugLog("  nodeAttributes", nodeAttributes);
-        debugLog("  childNodeId = " + childNodeId);
-        debugLog("  reservedId = " + reservedId);
-        debugLog("  layerId = " + layerId);
-        debugLog("  numOfFrames = " + numOfFrames);
-        debugLog("  frameAttributes", frameAttributes);
+        dataHolder.data.transform.push({
+            nodeId: nodeId,
+            nodeAttributes: nodeAttributes,
+            childNodeId: childNodeId,
+            reservedId: reservedId,
+            layerId: layerId,
+            numOfFrames: numOfFrames,
+            frameAttributes: frameAttributes
+        });
     };
 
     var contentsOfGroupNodeChunk = function(dataHolder) {
@@ -446,11 +574,13 @@ var vox = {};
         for (var i = 0; i < numOfChildren; i++) {
             childNodeIds[i] = dataHolder.parseInt32();
         }
-        
-        debugLog("  nodeId = " + nodeId);
-        debugLog("  nodeAttributes", nodeAttributes);
-        debugLog("  numOfChildren = " + numOfChildren);
-        debugLog("  childNodeIds", childNodeIds);
+
+        dataHolder.data.group.push({
+            nodeId: nodeId,
+            nodeAttributes: nodeAttributes,
+            numOfChildren: numOfChildren,
+            childNodeIds: childNodeIds
+        });
     };
 
     var contentsOfShapeNodeChunk = function(dataHolder) {
@@ -464,11 +594,13 @@ var vox = {};
             modelAttributes[i] = dataHolder.parseDict();
         }
 
-        debugLog("  nodeId = " + nodeId);
-        debugLog("  nodeAttributes", nodeAttributes);
-        debugLog("  numOfModels = " + numOfModels);
-        debugLog("  modelIds", modelIds);
-        debugLog("  modelAttributes", modelAttributes);
+        dataHolder.data.shape.push({
+            nodeId: nodeId,
+            nodeAttributes: nodeAttributes,
+            numOfModels: numOfModels,
+            modelIds: modelIds,
+            modelAttributes: modelAttributes
+        });
     };
 
     var contentsOfMaterialExChunk = function(dataHolder) {
@@ -477,6 +609,14 @@ var vox = {};
 
         debugLog("  materialId = " + materialId);
         debugLog("  properties", properties);
+    };
+
+    var contentsOfLayerChunk = function(dataHolder) {
+        var layerId = dataHolder.parseInt32();
+        var attributes = dataHolder.parseDict();
+
+        debugLog("  layerId = " + layerId);
+        debugLog("  attributes", attributes);
     };
 
     var unsupportedChunkType = function(dataHolder) {};

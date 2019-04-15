@@ -10,11 +10,16 @@
         this.size = null;
         this.voxels = [];
         this.palette = [];
-        
+        this.rootNode = [];
+
         this.anim = [{
             size: null,
             voxels: [],
         }];
+
+        this.transform = [];
+        this.group = [];
+        this.shape = [];
     };
     
 })();
