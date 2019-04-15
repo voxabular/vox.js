@@ -165,7 +165,9 @@ var vox = {};
                 debugLog("Root Node: ", dataHolder.data.rootNode);
             }
 
-            callback(null, dataHolder.data);
+            // TODO: rootNodeがない場合は最小構成のnodeを構築してデータを挿入する
+            console.log(dataHolder.data.rootNode)
+            callback(null, dataHolder.data.rootNode || dataHolder.data);
         } catch (e) {
             callback(e);
         }

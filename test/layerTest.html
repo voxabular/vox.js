@@ -55,8 +55,8 @@
         Promise
             .all(parseTasks)
             .then(function(voxelDataArray) {
-                voxelDataArray.forEach(function(voxelData, i) {
-                    const builder = new vox.MeshBuilder(voxelData, {
+                voxelDataArray.forEach(function(rootNode, i) {
+                    const builder = new vox.MeshBuilder(rootNode, {
                         voxelSize: 1.0,
                         vertexColor: false,
                         optimizeFaces: true,
