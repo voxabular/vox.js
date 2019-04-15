@@ -55,17 +55,72 @@
         Promise
             .all(parseTasks)
             .then(function(voxelDataArray) {
-                voxelDataArray.forEach(function(rootNode, i) {
-                    const builder = new vox.MeshBuilder(rootNode, {
-                        voxelSize: 1.0,
-                        vertexColor: false,
-                        optimizeFaces: true,
-                    });
-                    const mesh = builder.createMesh();
+                const setMesh = function(frameAttributes, currentNode) {
+                    switch (currentNode.type) {
+                        case 'transform':
+                            const newFrameAttributes = frameAttributes.concat();
+                            newFrameAttributes.push(currentNode.frameAttributes);
+                            setMesh(newFrameAttributes, currentNode.childNode);
+                            break;
+                        case 'group':
+                            currentNode.childNodes.forEach(function(node) {
+                                setMesh(frameAttributes, node);
+                            });
+                            break;
+                        case 'shape':
+                            const builder = new vox.MeshBuilder(currentNode.modelAttributes, {
+                                voxelSize: 1.0,
+                                vertexColor: false,
+                                optimizeFaces: true,
+                            });
+                            const mesh = builder.createMesh();
 
-                    scene.add(mesh);
+                            frameAttributes.forEach(function(attr) {
+                                const rotation = getRotation(attr.rotation);
+
+                                // TODO: 複数のrotationなどがくると上書きしてしまうので対応する
+                                mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+                                mesh.position.set(attr.translation.x, attr.translation.y, attr.translation.z * -1);
+                            });
+
+                            scene.add(mesh);
+                            break;
+                    }
+                };
+
+                voxelDataArray.forEach(function(rootNode, i) {
+                    rootNode.childNode.childNodes.forEach(function(node) {
+                        setMesh([rootNode.frameAttributes], node);
+                    });
                 });
             });
+
+        const getRotation = function(matrix) {
+            let x, y, z = 0;
+            switch (matrix[2][1]) {
+                case -1:
+                    x = - Math.PI / 2;
+                    y = 0;
+                    z = Math.atan2(matrix[1][0], matrix[0][0]);
+                    break;
+                case 1:
+                    x = Math.PI / 2;
+                    y = 0;
+                    z = Math.atan2(matrix[1][0], matrix[0][0]);
+                    break;
+                default:
+                    x = Math.asin(matrix[2][1]);
+                    y = Math.atan2(- matrix[2][0], matrix[2][2]);
+                    z = Math.atan2(- matrix[0][1], matrix[1][1]);
+                    break;
+            }
+
+            return {
+                x: x,
+                y: z,
+                z: y !== 0 ? y + Math.PI : y
+            }
+        };
 
         let frame = 0;
         const render = function () {

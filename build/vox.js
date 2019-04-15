@@ -221,8 +221,8 @@ var vox = {};
             childNode: null,
             layerId: transform.layerId,
             frameAttributes: {
-                rotation: rotationMatrix(transform.frameAttributes._r),
-                translation: translationMatrix(transform.frameAttributes._t)
+                rotation: rotationMatrix(transform.frameAttributes[0]._r),
+                translation: translationMatrix(transform.frameAttributes[0]._t)
             }
         }
     };
