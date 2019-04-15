@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<canvas id="c" width="500" height="500"></canvas>
+
+<script src="https://cdn.rawgit.com/mrdoob/three.js/r71/build/three.min.js"></script>
+<script src="../build/vox.js"></script>
+<script>
+    window.onload = function() {
+        const updateListeners = [];
+        const update = function (frame) {
+            updateListeners.forEach(function (listener) {
+                listener(frame);
+            });
+        };
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000);
+        const cameraTarget = new THREE.Vector3(0, 10, 0);
+        updateListeners.push(function(frame) {
+            camera.position.x = Math.cos(frame * 0.004) * 50;
+            camera.position.y = 15;
+            camera.position.z = Math.sin(frame * 0.004) * 50;
+            camera.lookAt(cameraTarget);
+        });
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff);
+        updateListeners.push(function(frame) {
+            directionalLight.position.x = Math.cos(frame * -0.001) * 100;
+            directionalLight.position.y = 100;
+            directionalLight.position.z = Math.sin(frame * -0.001) * 100;
+        });
+        scene.add(directionalLight);
+
+        const ambientLight = new THREE.AmbientLight(0xaaaaaa);
+        scene.add(ambientLight);
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById("c")
+        });
+        renderer.setSize(1024, 1024);
+        renderer.setClearColor(0x000000);
+
+        const parser = new vox.Parser();
+        const parseTasks = [
+            "vox/mv0.99.3/p20_p60.vox",
+        ].map(function (path) {
+            return parser.parse(path);
+        });
+        Promise
+            .all(parseTasks)
+            .then(function(voxelDataArray) {
+                voxelDataArray.forEach(function(voxelData, i) {
+                    const builder = new vox.MeshBuilder(voxelData, {
+                        voxelSize: 1.0,
+                        vertexColor: false,
+                        optimizeFaces: true,
+                    });
+                    const mesh = builder.createMesh();
+
+                    scene.add(mesh);
+                });
+            });
+
+        let frame = 0;
+        const render = function () {
+            update(frame++);
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        };
+        render();
+    };
+</script>
+
+</body>
+</html>
