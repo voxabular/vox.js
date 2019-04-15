@@ -166,7 +166,6 @@ var vox = {};
             }
 
             // TODO: rootNodeがない場合は最小構成のnodeを構築してデータを挿入する
-            console.log(dataHolder.data.rootNode)
             callback(null, dataHolder.data.rootNode || dataHolder.data);
         } catch (e) {
             callback(e);
@@ -194,7 +193,11 @@ var vox = {};
                     nodeId: shapeChildNode.nodeId,
                     nodeAttributes: shapeChildNode.nodeAttributes,
                     modelId: shapeChildNode.modelIds[0],
-                    modelAttributes: dataHolder.data.anim[shapeChildNode.modelIds[0]]
+                    modelAttributes: {
+                        size: dataHolder.data.anim[shapeChildNode.modelIds[0]].size,
+                        voxels: dataHolder.data.anim[shapeChildNode.modelIds[0]].voxels,
+                        palette: dataHolder.data.palette
+                    }
                 };
             case 'group':
                 currentNode.childNodes = [];

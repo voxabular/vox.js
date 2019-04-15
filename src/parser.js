@@ -99,7 +99,11 @@
                     nodeId: shapeChildNode.nodeId,
                     nodeAttributes: shapeChildNode.nodeAttributes,
                     modelId: shapeChildNode.modelIds[0],
-                    modelAttributes: dataHolder.data.anim[shapeChildNode.modelIds[0]]
+                    modelAttributes: {
+                        size: dataHolder.data.anim[shapeChildNode.modelIds[0]].size,
+                        voxels: dataHolder.data.anim[shapeChildNode.modelIds[0]].voxels,
+                        palette: dataHolder.data.palette
+                    }
                 };
             case 'group':
                 currentNode.childNodes = [];
