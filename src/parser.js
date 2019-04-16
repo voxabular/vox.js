@@ -55,8 +55,6 @@
         var dataHolder = new DataHolder(uint8Array);
         try {
             root(dataHolder);
-            dataHolder.data.size = dataHolder.data.anim[0].size;
-            dataHolder.data.voxels = dataHolder.data.anim[0].voxels;
             if (dataHolder.data.palette.length === 0) {
                 debugLog("(use default palette)");
                 dataHolder.data.palette = vox.defaultPalette;
@@ -69,10 +67,46 @@
                 dataHolder.data.rootNode = transformNode(dataHolder.data.transform[0]);
                 search('transform', dataHolder.data.rootNode, dataHolder);
                 debugLog("Root Node: ", dataHolder.data.rootNode);
+            } else {
+                // Default node
+                dataHolder.data.rootNode = {
+                    type: 'transform',
+                    nodeId: -1,
+                    nodeAttributes: {
+                        name: '',
+                        hidden: 0
+                    },
+                    childNodeId: 1,
+                    childNode: {
+                        type: 'group',
+                        nodeId: 1,
+                        nodeAttributes: {},
+                        childNodeIds: [2],
+                        childNodes: [{
+                                type: 'shape',
+                                nodeId: 2,
+                                nodeAttributes: {},
+                                modelId: 0,
+                                modelAttributes: {
+                                    size: dataHolder.data.anim[0].size,
+                                    voxels: dataHolder.data.anim[0].voxels,
+                                    palette: dataHolder.data.palette
+                                }
+                            }]
+                    },
+                    layerId: -1,
+                    frameAttributes: {
+                        rotation: convertToRotation([
+                            [1, 0, 0],
+                            [0, 1, 0],
+                            [0, 0, 1]
+                        ]),
+                        translation: translationMatrix('0 0 0')
+                    }
+                };
             }
 
-            // TODO: rootNodeがない場合は最小構成のnodeを構築してデータを挿入する
-            callback(null, dataHolder.data.rootNode || dataHolder.data);
+            callback(null, dataHolder.data.rootNode);
         } catch (e) {
             callback(e);
         }

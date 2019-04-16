@@ -7,8 +7,6 @@
      * @property {Array} palette [{r, g, b, a}...]
      */
     vox.VoxelData = function() {
-        this.size = null;
-        this.voxels = [];
         this.palette = [];
         this.rootNode = [];
 
