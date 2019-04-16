@@ -770,7 +770,6 @@ var vox = {};
         this.material = new THREE.MeshPhongMaterial();
 
         // 隣接ボクセル検索用ハッシュテーブル
-        console.log(this.voxelData);
         this.hashTable = createHashTable(this.voxelData.voxels);
         
         var offsetX = (this.voxelData.size.x - 1) * -0.5;
