@@ -55,44 +55,10 @@
         Promise
             .all(parseTasks)
             .then(function(voxelDataArray) {
-                const getModel = function(currentNode, parentNode) {
-                    switch (currentNode.type) {
-                        case 'transform':
-                            return getModel(currentNode.childNode, currentNode);
-                        case 'group':
-                            const boxes = new THREE.Group();
-                            currentNode.childNodes.forEach(function(node) {
-                                boxes.add(getModel(node, currentNode));
-                            });
-                            boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
-                            boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
-                            return boxes;
-                        case 'shape':
-                            const builder = new vox.MeshBuilder(currentNode.modelAttributes, {
-                                voxelSize: 1.0,
-                                vertexColor: false,
-                                optimizeFaces: true,
-                            });
-                            const mesh = builder.createMesh();
-
-                            mesh.geometry.computeBoundingBox();
-                            const middle = new THREE.Vector3();
-                            middle.x = (mesh.geometry.boundingBox.max.x + mesh.geometry.boundingBox.min.x) / 2;
-                            middle.y = (mesh.geometry.boundingBox.max.y + mesh.geometry.boundingBox.min.y) / 2;
-                            middle.z = (mesh.geometry.boundingBox.max.z + mesh.geometry.boundingBox.min.z) / 2;
-                            mesh.position.set( middle.x, middle.y, middle.z );
-                            mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation( - middle.x, - middle.y, - middle.z ) );
-
-                            mesh.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
-                            mesh.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
-                            return mesh;
-                    }
-                };
-
                 voxelDataArray.forEach(function(rootNode) {
-                    rootNode.childNode.childNodes.forEach(function(node) {
-                        scene.add(getModel(node, null));
-                    });
+                    var builder = new vox.GroupBuilder(rootNode);
+                    var group = builder.createGroup();
+                    scene.add(group);
                 });
             });
 

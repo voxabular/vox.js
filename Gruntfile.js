@@ -37,6 +37,7 @@ module.exports = function(grunt) {
     "src/meshbuilder.js",
     "src/texturefactory.js",
     "src/defaultpalette.js",
+    "src/groupbuilder.js",
 
     "src/md5.js",
   ];
