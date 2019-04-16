@@ -127,7 +127,7 @@
             childNode: null,
             layerId: transform.layerId,
             frameAttributes: {
-                rotation: rotationMatrix(transform.frameAttributes[0]._r),
+                rotation: convertToMatrixRotation(convertToRotation(rotationMatrix(transform.frameAttributes[0]._r))),
                 translation: translationMatrix(transform.frameAttributes[0]._t)
             }
         }
@@ -192,6 +192,56 @@
         thirdRow[thirdIndex] = third === 0 ? 1 : -1;
 
         return [ firstRow, secondRow, thirdRow ];
+    };
+
+    var convertToRotation = function(matrix) {
+        var x = 0;
+        var y = 0;
+        var z = 0;
+        switch (matrix[2][1]) {
+            case -1:
+                x = - Math.PI / 2;
+                y = 0;
+                z = Math.atan2(matrix[1][0], matrix[0][0]);
+                break;
+            case 1:
+                x = Math.PI / 2;
+                y = 0;
+                z = Math.atan2(matrix[1][0], matrix[0][0]);
+                break;
+            default:
+                x = Math.asin(matrix[2][1]);
+                y = Math.atan2(- matrix[2][0], matrix[2][2]);
+                z = Math.atan2(- matrix[0][1], matrix[1][1]);
+                break;
+        }
+
+        return {
+            x: x,
+            y: z,
+            z: y !== 0 ? y + Math.PI : y
+        }
+    };
+
+    var convertToMatrixRotation = function(rotation) {
+        return [
+            [
+                Math.cos(rotation.y) * Math.cos(rotation.z) - Math.sin(rotation.x) * Math.sin(rotation.y) * Math.sin(rotation.z),
+                - Math.cos(rotation.x) * Math.sin(rotation.z),
+                Math.sin(rotation.y) * Math.cos(rotation.z) + Math.sin(rotation.x) * Math.cos(rotation.y) * Math.sin(rotation.z)
+            ],
+            [
+                Math.cos(rotation.y) * Math.sin(rotation.z) + Math.sin(rotation.x) * Math.sin(rotation.y) * Math.cos(rotation.z),
+                Math.cos(rotation.x) * Math.cos(rotation.z),
+                Math.sin(rotation.y) * Math.sin(rotation.z) - Math.sin(rotation.x) * Math.cos(rotation.y) * Math.cos(rotation.z)
+            ],
+            [
+                - Math.cos(rotation.x) * Math.sin(rotation.y),
+                Math.sin(rotation.x),
+                Math.cos(rotation.x) * Math.cos(rotation.y)
+            ]
+
+        ];
     };
     
     var DataHolder = function(uint8Array) {
