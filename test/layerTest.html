@@ -55,18 +55,18 @@
         Promise
             .all(parseTasks)
             .then(function(voxelDataArray) {
-                const setMesh = function(frameAttributes, currentNode) {
+                const getModel = function(currentNode, parentNode) {
                     switch (currentNode.type) {
                         case 'transform':
-                            const newFrameAttributes = frameAttributes.concat();
-                            newFrameAttributes.push(currentNode.frameAttributes);
-                            setMesh(newFrameAttributes, currentNode.childNode);
-                            break;
+                            return getModel(currentNode.childNode, currentNode);
                         case 'group':
+                            const boxes = new THREE.Group();
                             currentNode.childNodes.forEach(function(node) {
-                                setMesh(frameAttributes, node);
+                                boxes.add(getModel(node, currentNode));
                             });
-                            break;
+                            boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
+                            boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
+                            return boxes;
                         case 'shape':
                             const builder = new vox.MeshBuilder(currentNode.modelAttributes, {
                                 voxelSize: 1.0,
@@ -75,7 +75,6 @@
                             });
                             const mesh = builder.createMesh();
 
-                            // 中心座標をずらす操作
                             mesh.geometry.computeBoundingBox();
                             const middle = new THREE.Vector3();
                             middle.x = (mesh.geometry.boundingBox.max.x + mesh.geometry.boundingBox.min.x) / 2;
@@ -84,29 +83,15 @@
                             mesh.position.set( middle.x, middle.y, middle.z );
                             mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation( - middle.x, - middle.y, - middle.z ) );
 
-                            // TODO: 回転の順番によって結果が変わるのでそこも考慮する
-                            // 参考: http://hooktail.sub.jp/mechanics/infinitesimalRot1/
-                            frameAttributes.forEach(function(attr) {
-                                // TODO: 回転するグループによっては、中心座標がそのグループの中心になるように変更しないといけない
-                                const rotation = attr.rotation;
-                                const m = new THREE.Matrix4();
-                                m.set(
-                                    rotation[0][0], rotation[0][1], rotation[0][2], attr.translation.x,
-                                    rotation[1][0], rotation[1][1], rotation[1][2], attr.translation.y,
-                                    rotation[2][0], rotation[2][1], rotation[2][2], - attr.translation.z,
-                                    0, 0, 0, 1,
-                                );
-                                mesh.geometry.applyMatrix(m);
-                            });
-
-                            scene.add(mesh);
-                            break;
+                            mesh.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
+                            mesh.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
+                            return mesh;
                     }
                 };
 
-                voxelDataArray.forEach(function(rootNode, i) {
+                voxelDataArray.forEach(function(rootNode) {
                     rootNode.childNode.childNodes.forEach(function(node) {
-                        setMesh([rootNode.frameAttributes], node);
+                        scene.add(getModel(node, null));
                     });
                 });
             });

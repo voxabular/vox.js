@@ -127,7 +127,7 @@
             childNode: null,
             layerId: transform.layerId,
             frameAttributes: {
-                rotation: convertToMatrixRotation(convertToRotation(rotationMatrix(transform.frameAttributes[0]._r))),
+                rotation: convertToRotation(rotationMatrix(transform.frameAttributes[0]._r)),
                 translation: translationMatrix(transform.frameAttributes[0]._t)
             }
         }
