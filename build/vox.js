@@ -174,9 +174,17 @@ var vox = {};
                         nodeId: 1,
                         nodeAttributes: {},
                         childNodeIds: [2],
-                        childNodes: [{
+                        childNodes: [ {
+                            type: 'transform',
+                            nodeId: 2,
+                            nodeAttributes: {
+                                name: '',
+                                hidden: 0
+                            },
+                            childNodeId: 3,
+                            childNode: {
                                 type: 'shape',
-                                nodeId: 2,
+                                nodeId: 3,
                                 nodeAttributes: {},
                                 modelId: 0,
                                 modelAttributes: {
@@ -184,7 +192,17 @@ var vox = {};
                                     voxels: dataHolder.data.anim[0].voxels,
                                     palette: dataHolder.data.palette
                                 }
-                            }]
+                            },
+                            layerId: -1,
+                            frameAttributes: {
+                                rotation: convertToRotation([
+                                    [1, 0, 0],
+                                    [0, 1, 0],
+                                    [0, 0, 1]
+                                ]),
+                                translation: translationMatrix('0 0 0')
+                            }
+                        }]
                     },
                     layerId: -1,
                     frameAttributes: {
@@ -1300,14 +1318,12 @@ var vox = {};
     /**
      * @constructor
      *
-     * @param {vox.VoxelData} voxelData
+     * @param {vox.VoxelData.rootNode} rootNode
      * @param {Object=} param
      * @param {number=} param.voxelSize ボクセルの大きさ. default = 1.0.
      * @param {boolean=} param.vertexColor 頂点色を使用する. default = false.
      * @param {boolean=} param.optimizeFaces 隠れた頂点／面を削除する. dafalue = true.
      * @param {boolean=} param.originToBottom 地面の高さを形状の中心にする. dafalue = true.
-     * @property {THREE.Geometry} geometry
-     * @property {THREE.Material} material
      */
     vox.GroupBuilder = function(rootNode, param) {
         this.rootNode = rootNode;

@@ -82,9 +82,17 @@
                         nodeId: 1,
                         nodeAttributes: {},
                         childNodeIds: [2],
-                        childNodes: [{
+                        childNodes: [ {
+                            type: 'transform',
+                            nodeId: 2,
+                            nodeAttributes: {
+                                name: '',
+                                hidden: 0
+                            },
+                            childNodeId: 3,
+                            childNode: {
                                 type: 'shape',
-                                nodeId: 2,
+                                nodeId: 3,
                                 nodeAttributes: {},
                                 modelId: 0,
                                 modelAttributes: {
@@ -92,7 +100,17 @@
                                     voxels: dataHolder.data.anim[0].voxels,
                                     palette: dataHolder.data.palette
                                 }
-                            }]
+                            },
+                            layerId: -1,
+                            frameAttributes: {
+                                rotation: convertToRotation([
+                                    [1, 0, 0],
+                                    [0, 1, 0],
+                                    [0, 0, 1]
+                                ]),
+                                translation: translationMatrix('0 0 0')
+                            }
+                        }]
                     },
                     layerId: -1,
                     frameAttributes: {
