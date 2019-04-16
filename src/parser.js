@@ -14,11 +14,14 @@
         var xhr = new vox.Xhr();
         return xhr.getBinary(url).then(function(uint8Array) {
             return new Promise(function(resolve, reject) {
-                self.parseUint8Array(uint8Array, function(error, voxelData) {
+                self.parseUint8Array(uint8Array, function(error, rootNode, palette) {
                     if (error) {
                         reject(error);
                     } else {
-                        resolve(voxelData);
+                        resolve({
+                            rootNode: rootNode,
+                            palette: palette
+                        });
                     }
                 });
             });
@@ -97,8 +100,7 @@
                                 modelId: 0,
                                 modelAttributes: {
                                     size: dataHolder.data.anim[0].size,
-                                    voxels: dataHolder.data.anim[0].voxels,
-                                    palette: dataHolder.data.palette
+                                    voxels: dataHolder.data.anim[0].voxels
                                 }
                             },
                             layerId: -1,
@@ -124,7 +126,7 @@
                 };
             }
 
-            callback(null, dataHolder.data.rootNode);
+            callback(null, dataHolder.data.rootNode, dataHolder.data.palette);
         } catch (e) {
             callback(e);
         }
@@ -153,8 +155,7 @@
                     modelId: shapeChildNode.modelIds[0],
                     modelAttributes: {
                         size: dataHolder.data.anim[shapeChildNode.modelIds[0]].size,
-                        voxels: dataHolder.data.anim[shapeChildNode.modelIds[0]].voxels,
-                        palette: dataHolder.data.palette
+                        voxels: dataHolder.data.anim[shapeChildNode.modelIds[0]].voxels
                     }
                 };
             case 'group':

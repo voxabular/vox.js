@@ -12,11 +12,12 @@
      * @property {THREE.Geometry} geometry
      * @property {THREE.Material} material
      */
-    vox.MeshBuilder = function(voxelData, param) {
+    vox.MeshBuilder = function(voxelData, palette, param) {
         if (vox.MeshBuilder.textureFactory === null) vox.MeshBuilder.textureFactory = new vox.TextureFactory();
         
         param = param || {};
         this.voxelData = voxelData;
+        this.palette = palette;
         this.voxelSize = param.voxelSize || vox.MeshBuilder.DEFAULT_PARAM.voxelSize;
         this.vertexColor = (param.vertexColor === undefined) ? vox.MeshBuilder.DEFAULT_PARAM.vertexColor : param.vertexColor;
         this.optimizeFaces = (param.optimizeFaces === undefined) ? vox.MeshBuilder.DEFAULT_PARAM.optimizeFaces : param.optimizeFaces;
@@ -65,7 +66,7 @@
         if (this.vertexColor) {
             this.material.vertexColors = THREE.FaceColors;
         } else {
-            this.material.map = vox.MeshBuilder.textureFactory.getTexture(this.voxelData);
+            this.material.map = vox.MeshBuilder.textureFactory.getTexture(this.palette);
         }
     };
 
@@ -73,7 +74,7 @@
      * @return {THREE.Texture}
      */
     vox.MeshBuilder.prototype.getTexture = function() {
-        return vox.MeshBuilder.textureFactory.getTexture(this.voxelData);
+        return vox.MeshBuilder.textureFactory.getTexture(this.palette);
     };
 
     vox.MeshBuilder.prototype._createVoxGeometry = function(voxel) {
@@ -106,7 +107,7 @@
         
         // 頂点色
         if (this.vertexColor) {
-            var c = this.voxelData.palette[voxel.colorIndex];
+            var c = this.palette[voxel.colorIndex];
             var color = new THREE.Color(c.r / 255, c.g / 255, c.b / 255);
         }
 

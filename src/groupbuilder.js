@@ -10,29 +10,37 @@
      * @param {boolean=} param.optimizeFaces 隠れた頂点／面を削除する. dafalue = true.
      * @param {boolean=} param.originToBottom 地面の高さを形状の中心にする. dafalue = true.
      */
-    vox.GroupBuilder = function(rootNode, param) {
+    vox.GroupBuilder = function(rootNode, palette, param) {
         this.rootNode = rootNode;
+        this.palette = palette;
         this.param = param;
     };
 
     vox.GroupBuilder.prototype.createGroup = function() {
-        return getModel(this.rootNode, null, this.param);
+        return getModel(this.rootNode, null, this.palette, this.param);
     };
 
-    var getModel = function(currentNode, parentNode, meshBuilderParam) {
+    /**
+     * @return {THREE.Texture}
+     */
+    vox.GroupBuilder.prototype.getTexture = function() {
+        return vox.MeshBuilder.textureFactory.getTexture(this.palette);
+    };
+
+    var getModel = function(currentNode, parentNode, palette, meshBuilderParam) {
         switch (currentNode.type) {
             case 'transform':
-                return getModel(currentNode.childNode, currentNode, meshBuilderParam);
+                return getModel(currentNode.childNode, currentNode, palette, meshBuilderParam);
             case 'group':
                 const boxes = new THREE.Group();
                 currentNode.childNodes.forEach(function(node) {
-                    boxes.add(getModel(node, currentNode, meshBuilderParam));
+                    boxes.add(getModel(node, currentNode, palette, meshBuilderParam));
                 });
                 boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
                 boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
                 return boxes;
             case 'shape':
-                const builder = new vox.MeshBuilder(currentNode.modelAttributes, meshBuilderParam);
+                const builder = new vox.MeshBuilder(currentNode.modelAttributes, palette, meshBuilderParam);
                 const mesh = builder.createMesh();
 
                 mesh.geometry.computeBoundingBox();

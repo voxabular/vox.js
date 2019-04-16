@@ -106,11 +106,14 @@ var vox = {};
         var xhr = new vox.Xhr();
         return xhr.getBinary(url).then(function(uint8Array) {
             return new Promise(function(resolve, reject) {
-                self.parseUint8Array(uint8Array, function(error, voxelData) {
+                self.parseUint8Array(uint8Array, function(error, rootNode, palette) {
                     if (error) {
                         reject(error);
                     } else {
-                        resolve(voxelData);
+                        resolve({
+                            rootNode: rootNode,
+                            palette: palette
+                        });
                     }
                 });
             });
@@ -189,8 +192,7 @@ var vox = {};
                                 modelId: 0,
                                 modelAttributes: {
                                     size: dataHolder.data.anim[0].size,
-                                    voxels: dataHolder.data.anim[0].voxels,
-                                    palette: dataHolder.data.palette
+                                    voxels: dataHolder.data.anim[0].voxels
                                 }
                             },
                             layerId: -1,
@@ -216,7 +218,7 @@ var vox = {};
                 };
             }
 
-            callback(null, dataHolder.data.rootNode);
+            callback(null, dataHolder.data.rootNode, dataHolder.data.palette);
         } catch (e) {
             callback(e);
         }
@@ -245,8 +247,7 @@ var vox = {};
                     modelId: shapeChildNode.modelIds[0],
                     modelAttributes: {
                         size: dataHolder.data.anim[shapeChildNode.modelIds[0]].size,
-                        voxels: dataHolder.data.anim[shapeChildNode.modelIds[0]].voxels,
-                        palette: dataHolder.data.palette
+                        voxels: dataHolder.data.anim[shapeChildNode.modelIds[0]].voxels
                     }
                 };
             case 'group':
@@ -757,11 +758,12 @@ var vox = {};
      * @property {THREE.Geometry} geometry
      * @property {THREE.Material} material
      */
-    vox.MeshBuilder = function(voxelData, param) {
+    vox.MeshBuilder = function(voxelData, palette, param) {
         if (vox.MeshBuilder.textureFactory === null) vox.MeshBuilder.textureFactory = new vox.TextureFactory();
         
         param = param || {};
         this.voxelData = voxelData;
+        this.palette = palette;
         this.voxelSize = param.voxelSize || vox.MeshBuilder.DEFAULT_PARAM.voxelSize;
         this.vertexColor = (param.vertexColor === undefined) ? vox.MeshBuilder.DEFAULT_PARAM.vertexColor : param.vertexColor;
         this.optimizeFaces = (param.optimizeFaces === undefined) ? vox.MeshBuilder.DEFAULT_PARAM.optimizeFaces : param.optimizeFaces;
@@ -810,7 +812,7 @@ var vox = {};
         if (this.vertexColor) {
             this.material.vertexColors = THREE.FaceColors;
         } else {
-            this.material.map = vox.MeshBuilder.textureFactory.getTexture(this.voxelData);
+            this.material.map = vox.MeshBuilder.textureFactory.getTexture(this.palette);
         }
     };
 
@@ -818,7 +820,7 @@ var vox = {};
      * @return {THREE.Texture}
      */
     vox.MeshBuilder.prototype.getTexture = function() {
-        return vox.MeshBuilder.textureFactory.getTexture(this.voxelData);
+        return vox.MeshBuilder.textureFactory.getTexture(this.palette);
     };
 
     vox.MeshBuilder.prototype._createVoxGeometry = function(voxel) {
@@ -851,7 +853,7 @@ var vox = {};
         
         // 頂点色
         if (this.vertexColor) {
-            var c = this.voxelData.palette[voxel.colorIndex];
+            var c = this.palette[voxel.colorIndex];
             var color = new THREE.Color(c.r / 255, c.g / 255, c.b / 255);
         }
 
@@ -986,13 +988,13 @@ var vox = {};
      * @param {vox.VoxelData} voxelData
      * @return {HTMLCanvasElement}
      */
-    vox.TextureFactory.prototype.createCanvas = function(voxelData) {
+    vox.TextureFactory.prototype.createCanvas = function(palette) {
         var canvas = document.createElement("canvas");
         canvas.width = 256;
         canvas.height= 1;
         var context = canvas.getContext("2d");
-        for (var i = 0, len = voxelData.palette.length; i < len; i++) {
-            var p = voxelData.palette[i];
+        for (var i = 0, len = palette.length; i < len; i++) {
+            var p = palette[i];
             context.fillStyle = "rgb(" + p.r + "," + p.g + "," + p.b + ")";
             context.fillRect(i * 1, 0, 1, 1);
         }
@@ -1006,15 +1008,14 @@ var vox = {};
      * @param {vox.VoxelData} voxelData
      * @return {THREE.Texture}
      */
-    vox.TextureFactory.prototype.getTexture = function(voxelData) {
-        var palette = voxelData.palette;
+    vox.TextureFactory.prototype.getTexture = function(palette) {
         var hashCode = getHashCode(palette);
         if (hashCode in cache) {
             // console.log("cache hit");
             return cache[hashCode];
         }
         
-        var canvas = this.createCanvas(voxelData);
+        var canvas = this.createCanvas(palette);
         var texture = new THREE.Texture(canvas);
         texture.needsUpdate = true;
         
@@ -1325,29 +1326,37 @@ var vox = {};
      * @param {boolean=} param.optimizeFaces 隠れた頂点／面を削除する. dafalue = true.
      * @param {boolean=} param.originToBottom 地面の高さを形状の中心にする. dafalue = true.
      */
-    vox.GroupBuilder = function(rootNode, param) {
+    vox.GroupBuilder = function(rootNode, palette, param) {
         this.rootNode = rootNode;
+        this.palette = palette;
         this.param = param;
     };
 
     vox.GroupBuilder.prototype.createGroup = function() {
-        return getModel(this.rootNode, null, this.param);
+        return getModel(this.rootNode, null, this.palette, this.param);
     };
 
-    var getModel = function(currentNode, parentNode, meshBuilderParam) {
+    /**
+     * @return {THREE.Texture}
+     */
+    vox.GroupBuilder.prototype.getTexture = function() {
+        return vox.MeshBuilder.textureFactory.getTexture(this.palette);
+    };
+
+    var getModel = function(currentNode, parentNode, palette, meshBuilderParam) {
         switch (currentNode.type) {
             case 'transform':
-                return getModel(currentNode.childNode, currentNode, meshBuilderParam);
+                return getModel(currentNode.childNode, currentNode, palette, meshBuilderParam);
             case 'group':
                 const boxes = new THREE.Group();
                 currentNode.childNodes.forEach(function(node) {
-                    boxes.add(getModel(node, currentNode, meshBuilderParam));
+                    boxes.add(getModel(node, currentNode, palette, meshBuilderParam));
                 });
                 boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
                 boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
                 return boxes;
             case 'shape':
-                const builder = new vox.MeshBuilder(currentNode.modelAttributes, meshBuilderParam);
+                const builder = new vox.MeshBuilder(currentNode.modelAttributes, palette, meshBuilderParam);
                 const mesh = builder.createMesh();
 
                 mesh.geometry.computeBoundingBox();

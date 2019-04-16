@@ -55,8 +55,8 @@
         Promise
             .all(parseTasks)
             .then(function(voxelDataArray) {
-                voxelDataArray.forEach(function(rootNode) {
-                    var builder = new vox.GroupBuilder(rootNode);
+                voxelDataArray.forEach(function(voxelData) {
+                    var builder = new vox.GroupBuilder(voxelData.rootNode, voxelData.palette);
                     var group = builder.createGroup();
                     scene.add(group);
                 });
