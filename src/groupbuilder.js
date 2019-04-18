@@ -28,6 +28,8 @@
     };
 
     var getModel = function(currentNode, parentNode, palette, meshBuilderParam) {
+        // TODO: layerのデータを使ってhiddenを設定する
+        // 親transformがhiddenだったらその時点でデータはレンダリングしないようにする
         switch (currentNode.type) {
             case 'transform':
                 return getModel(currentNode.childNode, currentNode, palette, meshBuilderParam);

@@ -9,6 +9,7 @@
     vox.VoxelData = function() {
         this.palette = [];
         this.rootNode = [];
+        this.layer = [];
 
         this.anim = [{
             size: null,

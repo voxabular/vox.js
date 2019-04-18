@@ -54,6 +54,7 @@ var vox = {};
     vox.VoxelData = function() {
         this.palette = [];
         this.rootNode = [];
+        this.layer = [];
 
         this.anim = [{
             size: null,
@@ -106,14 +107,11 @@ var vox = {};
         var xhr = new vox.Xhr();
         return xhr.getBinary(url).then(function(uint8Array) {
             return new Promise(function(resolve, reject) {
-                self.parseUint8Array(uint8Array, function(error, rootNode, palette) {
+                self.parseUint8Array(uint8Array, function(error, voxelData) {
                     if (error) {
                         reject(error);
                     } else {
-                        resolve({
-                            rootNode: rootNode,
-                            palette: palette
-                        });
+                        resolve(voxelData);
                     }
                 });
             });
@@ -218,7 +216,11 @@ var vox = {};
                 };
             }
 
-            callback(null, dataHolder.data.rootNode, dataHolder.data.palette);
+            callback(null, {
+                rootNode: dataHolder.data.rootNode,
+                palette: dataHolder.data.palette,
+                layer: dataHolder.data.layer
+            });
         } catch (e) {
             callback(e);
         }
@@ -721,8 +723,13 @@ var vox = {};
         var layerId = dataHolder.parseInt32();
         var attributes = dataHolder.parseDict();
 
-        debugLog("  layerId = " + layerId);
-        debugLog("  attributes", attributes);
+        dataHolder.data.layer.push({
+            layerId: layerId,
+            layerAttributes: {
+                name: attributes._name,
+                hidden: parseInt(attributes._hidden) || 0
+            }
+        });
     };
 
     var unsupportedChunkType = function(dataHolder) {};
