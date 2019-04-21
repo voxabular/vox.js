@@ -60,6 +60,9 @@
 
                 mesh.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
                 mesh.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
+
+                // 原点位置を元に戻す
+                mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation( middle.x, middle.y, middle.z ) );
                 return mesh;
         }
     };

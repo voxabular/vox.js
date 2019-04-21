@@ -70,7 +70,7 @@ window.onload = function() {
         var builder = new vox.GroupBuilder(voxelData);
         var group = builder.createGroup();
         group.children.forEach(function(mesh) {
-            mesh.position.set(0, 10, 0);
+            mesh.position.set(0, 0, 0);
             mesh.castShadow = true;
             mesh.receiveShadow = false;
         });

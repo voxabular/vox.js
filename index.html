@@ -125,11 +125,13 @@ Promise
     .all(tasks)
     .then(function(dataList) {
         dataList.forEach(function(data) {
-            var builder = new vox.MeshBuilder(data);
-            var mesh = builder.createMesh();
-            mesh.castShadow = true;
-            mesh.receiveShadow = false;
-            meshList.push(mesh);
+            var builder = new vox.GroupBuilder(data);
+            var group = builder.createGroup();
+            group.children.forEach(function(mesh) {
+                mesh.castShadow = true;
+                mesh.receiveShadow = false;
+            });
+            meshList.push(group);
         });
 
         changeMesh();
