@@ -8,7 +8,7 @@
 <body>
   <canvas id="c" width="500" height="500"></canvas>
   <script src="https://cdn.rawgit.com/mrdoob/three.js/master/build/three.min.js"></script>
-  <script src="https://rawgit.com/daishihmr/vox.js/master/build/vox.js"></script>
+  <script src="../build/vox.js"></script>
   <script>
   window.onload = function() {
     var scene = new THREE.Scene();
@@ -29,13 +29,13 @@
     var parser = new vox.Parser();
     parser.parse("veh_mini1.vox")
       .then(function(data) {
-        var builder = new vox.MeshBuilder(data, {
+        var builder = new vox.GroupBuilder(data, {
           voxelSize: 1.0,
           vertexColor: false,
           optimizeFaces: true,
         });
-        var mesh = builder.createMesh();
-        scene.add(mesh);
+        var group = builder.createGroup();
+        scene.add(group);
       });
 
     var render = function() {
