@@ -67,7 +67,7 @@ window.onload = function() {
     
     var parser = new vox.Parser();
     parser.parse("vox/mv0.97/p1.vox").then(function(voxelData) {
-        var builder = new vox.GroupBuilder(voxelData.rootNode, voxelData.palette);
+        var builder = new vox.GroupBuilder(voxelData);
         var group = builder.createGroup();
         group.position.set(0, 0, 0);
         group.castShadow = true;

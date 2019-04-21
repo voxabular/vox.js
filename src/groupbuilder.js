@@ -3,40 +3,45 @@
     /**
      * @constructor
      *
-     * @param {vox.VoxelData.rootNode} rootNode
+     * @param {vox.VoxelData} voxelData
      * @param {Object=} param
      * @param {number=} param.voxelSize ボクセルの大きさ. default = 1.0.
      * @param {boolean=} param.vertexColor 頂点色を使用する. default = false.
      * @param {boolean=} param.optimizeFaces 隠れた頂点／面を削除する. dafalue = true.
      * @param {boolean=} param.originToBottom 地面の高さを形状の中心にする. dafalue = true.
      */
-    vox.GroupBuilder = function(rootNode, palette, param) {
-        this.rootNode = rootNode;
-        this.palette = palette;
+    vox.GroupBuilder = function(voxelData, param) {
+        this.voxelData = voxelData;
         this.param = param;
     };
 
     vox.GroupBuilder.prototype.createGroup = function() {
-        return getModel(this.rootNode, null, this.palette, this.param);
+        return getModel(this.voxelData.rootNode, null, this.voxelData.palette, this.voxelData.layer, this.param);
     };
 
     /**
      * @return {THREE.Texture}
      */
     vox.GroupBuilder.prototype.getTexture = function() {
-        return vox.MeshBuilder.textureFactory.getTexture(this.palette);
+        return vox.MeshBuilder.textureFactory.getTexture(this.voxelData.palette);
     };
 
-    var getModel = function(currentNode, parentNode, palette, meshBuilderParam) {
-        // TODO: layerのデータを使ってhiddenを設定する
-        // 親transformがhiddenだったらその時点でデータはレンダリングしないようにする
+    var getModel = function(currentNode, parentNode, palette, layer, meshBuilderParam) {
         switch (currentNode.type) {
             case 'transform':
-                return getModel(currentNode.childNode, currentNode, palette, meshBuilderParam);
+                const targetLayer = layer.find(function(l) {
+                    return l.layerId === currentNode.layerId;
+                });
+                if (targetLayer && targetLayer.layerAttributes.hidden === 1) {
+                    // 非表示のため空のオブジェクトを返す
+                    return new THREE.Object3D();
+                }
+
+                return getModel(currentNode.childNode, currentNode, palette, layer, meshBuilderParam);
             case 'group':
                 const boxes = new THREE.Group();
                 currentNode.childNodes.forEach(function(node) {
-                    boxes.add(getModel(node, currentNode, palette, meshBuilderParam));
+                    boxes.add(getModel(node, currentNode, palette, layer, meshBuilderParam));
                 });
                 boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
                 boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
