@@ -43,26 +43,30 @@
                 currentNode.childNodes.forEach(function(node) {
                     boxes.add(getModel(node, currentNode, palette, layer, meshBuilderParam));
                 });
-                boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
-                boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
+
+                if (parentNode.frameAttributes.rotation !== undefined) {
+                    boxes.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
+                    boxes.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
+                }
+
                 return boxes;
             case 'shape':
                 const builder = new vox.MeshBuilder(currentNode.modelAttributes, palette, meshBuilderParam);
                 const mesh = builder.createMesh();
 
-                mesh.geometry.computeBoundingBox();
-                const middle = new THREE.Vector3();
-                middle.x = (mesh.geometry.boundingBox.max.x + mesh.geometry.boundingBox.min.x) / 2;
-                middle.y = (mesh.geometry.boundingBox.max.y + mesh.geometry.boundingBox.min.y) / 2;
-                middle.z = (mesh.geometry.boundingBox.max.z + mesh.geometry.boundingBox.min.z) / 2;
-                mesh.position.set( middle.x, middle.y, middle.z );
-                mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation( - middle.x, - middle.y, - middle.z ) );
+                if (parentNode.frameAttributes.rotation !== undefined) {
+                    mesh.geometry.computeBoundingBox();
+                    const middle = new THREE.Vector3();
+                    middle.x = (mesh.geometry.boundingBox.max.x + mesh.geometry.boundingBox.min.x) / 2;
+                    middle.y = (mesh.geometry.boundingBox.max.y + mesh.geometry.boundingBox.min.y) / 2;
+                    middle.z = (mesh.geometry.boundingBox.max.z + mesh.geometry.boundingBox.min.z) / 2;
+                    mesh.position.set(middle.x, middle.y, middle.z);
+                    mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-middle.x, -middle.y, -middle.z));
 
-                mesh.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
-                mesh.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, - parentNode.frameAttributes.translation.z);
+                    mesh.rotation.set(parentNode.frameAttributes.rotation.x, parentNode.frameAttributes.rotation.y, parentNode.frameAttributes.rotation.z);
+                    mesh.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, -parentNode.frameAttributes.translation.z);
+                }
 
-                // 原点位置を元に戻す
-                mesh.geometry.applyMatrix(new THREE.Matrix4().makeTranslation( middle.x, middle.y, middle.z ) );
                 return mesh;
         }
     };

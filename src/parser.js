@@ -101,25 +101,11 @@
                                 }
                             },
                             layerId: -1,
-                            frameAttributes: {
-                                rotation: convertToRotation([
-                                    [1, 0, 0],
-                                    [0, 1, 0],
-                                    [0, 0, 1]
-                                ]),
-                                translation: translationMatrix('0 0 0')
-                            }
+                            frameAttributes: {}
                         }]
                     },
                     layerId: -1,
-                    frameAttributes: {
-                        rotation: convertToRotation([
-                            [1, 0, 0],
-                            [0, 1, 0],
-                            [0, 0, 1]
-                        ]),
-                        translation: translationMatrix('0 0 0')
-                    }
+                    frameAttributes: {}
                 };
             }
 

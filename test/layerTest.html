@@ -20,6 +20,9 @@
 
         const scene = new THREE.Scene();
 
+        var axes = new THREE.AxisHelper(25);
+        scene.add(axes);
+
         const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000);
         const cameraTarget = new THREE.Vector3(0, 10, 0);
         updateListeners.push(function(frame) {
