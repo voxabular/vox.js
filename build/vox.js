@@ -161,45 +161,7 @@ var vox = {};
                 search('transform', dataHolder.data.rootNode, dataHolder);
                 debugLog("Root Node: ", dataHolder.data.rootNode);
             } else {
-                // Default node
-                dataHolder.data.rootNode = {
-                    type: 'transform',
-                    nodeId: -1,
-                    nodeAttributes: {
-                        name: '',
-                        hidden: 0
-                    },
-                    childNodeId: 1,
-                    childNode: {
-                        type: 'group',
-                        nodeId: 1,
-                        nodeAttributes: {},
-                        childNodeIds: [2],
-                        childNodes: [ {
-                            type: 'transform',
-                            nodeId: 2,
-                            nodeAttributes: {
-                                name: '',
-                                hidden: 0
-                            },
-                            childNodeId: 3,
-                            childNode: {
-                                type: 'shape',
-                                nodeId: 3,
-                                nodeAttributes: {},
-                                modelId: 0,
-                                modelAttributes: {
-                                    size: dataHolder.data.anim[0].size,
-                                    voxels: dataHolder.data.anim[0].voxels
-                                }
-                            },
-                            layerId: -1,
-                            frameAttributes: {}
-                        }]
-                    },
-                    layerId: -1,
-                    frameAttributes: {}
-                };
+                dataHolder.data.rootNode = vox.defaultRootNode(dataHolder.data.anim[0]);
             }
 
             callback(null, {
@@ -1305,6 +1267,53 @@ var vox = {};
         // {r:0,g:0,b:0,a:255},
     ];
     
+})();
+
+(function() {
+
+    /**
+     * レイヤー構造に対応していないvoxファイルのデフォルトノード
+     */
+    vox.defaultRootNode = function(voxel) {
+        return {
+            type: 'transform',
+            nodeId: -1,
+            nodeAttributes: {
+                name: '',
+                hidden: 0
+            },
+            childNodeId: 1,
+            childNode: {
+                type: 'group',
+                nodeId: 1,
+                nodeAttributes: {},
+                childNodeIds: [2],
+                childNodes: [{
+                    type: 'transform',
+                    nodeId: 2,
+                    nodeAttributes: {
+                        name: '',
+                        hidden: 0
+                    },
+                    childNodeId: 3,
+                    childNode: {
+                        type: 'shape',
+                        nodeId: 3,
+                        nodeAttributes: {},
+                        modelId: 0,
+                        modelAttributes: {
+                            size: voxel.size,
+                            voxels: voxel.voxels
+                        }
+                    },
+                    layerId: -1,
+                    frameAttributes: {}
+                }]
+            },
+            layerId: -1,
+            frameAttributes: {}
+        };
+    }
 })();
 
 (function() {
