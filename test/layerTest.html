@@ -60,7 +60,7 @@
             .then(function(voxelDataArray) {
                 voxelDataArray.forEach(function(voxelData) {
                     var builder = new vox.GroupBuilder(voxelData);
-                    var group = builder.createGroup();
+                    var group = builder.group;
                     scene.add(group);
                 });
             });

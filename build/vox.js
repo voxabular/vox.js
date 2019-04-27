@@ -1331,10 +1331,9 @@ var vox = {};
     vox.GroupBuilder = function(voxelData, param) {
         this.voxelData = voxelData;
         this.param = param;
-    };
 
-    vox.GroupBuilder.prototype.createGroup = function() {
-        return getModel(this.voxelData.rootNode, null, this.voxelData.palette, this.voxelData.layer, this.param);
+        this.meshBuilders = [];
+        this.group = this.getModel(this.voxelData.rootNode, null, this.voxelData.palette, this.voxelData.layer, this.param);
     };
 
     /**
@@ -1344,7 +1343,7 @@ var vox = {};
         return vox.MeshBuilder.textureFactory.getTexture(this.voxelData.palette);
     };
 
-    var getModel = function(currentNode, parentNode, palette, layer, meshBuilderParam) {
+    vox.GroupBuilder.prototype.getModel = function(currentNode, parentNode, palette, layer, meshBuilderParam) {
         switch (currentNode.type) {
             case 'transform':
                 const targetLayer = layer.find(function(l) {
@@ -1355,11 +1354,12 @@ var vox = {};
                     return new THREE.Object3D();
                 }
 
-                return getModel(currentNode.childNode, currentNode, palette, layer, meshBuilderParam);
+                return this.getModel(currentNode.childNode, currentNode, palette, layer, meshBuilderParam);
             case 'group':
                 const boxes = new THREE.Group();
+                const _self = this;
                 currentNode.childNodes.forEach(function(node) {
-                    boxes.add(getModel(node, currentNode, palette, layer, meshBuilderParam));
+                    boxes.add(_self.getModel(node, currentNode, palette, layer, meshBuilderParam));
                 });
 
                 if (parentNode.frameAttributes.rotation !== undefined) {
@@ -1385,6 +1385,7 @@ var vox = {};
                     mesh.position.set(parentNode.frameAttributes.translation.x, parentNode.frameAttributes.translation.y, -parentNode.frameAttributes.translation.z);
                 }
 
+                this.meshBuilders.push(mesh);
                 return mesh;
         }
     };

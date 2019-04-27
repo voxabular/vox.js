@@ -126,7 +126,7 @@ Promise
     .then(function(dataList) {
         dataList.forEach(function(data) {
             var builder = new vox.GroupBuilder(data);
-            var group = builder.createGroup();
+            var group = builder.group;
             group.children.forEach(function(mesh) {
                 mesh.castShadow = true;
                 mesh.receiveShadow = false;
