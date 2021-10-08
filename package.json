@@ -1,30 +1,31 @@
 {
-  "name": "vox.js",
-  "version": "1.1.0",
-  "description": "parse MagicaVoxel .vox file on JavaScript",
-  "homepage": "https://github.com/daishihmr/vox.js",
-  "main": "build/vox.js",
-  "scripts": {
-    "dev": "npx grunt && npx run ./test/main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/daishihmr/vox.js.git"
-  },
-  "keywords": [
-    "three.js",
-    "MagicaVoxel",
-    "3d",
-    "voxel"
-  ],
-  "author": "daishihmr",
-  "license": "MIT",
-  "devDependencies": {
-    "express": "^4.16.4",
-    "grunt": "^0.4.5",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-uglify": "^0.9.1",
-    "grunt-contrib-watch": "^0.6.1"
-  }
+    "name": "vox.js",
+    "version": "1.1.0",
+    "description": "parse MagicaVoxel .vox file on JavaScript",
+    "homepage": "https://github.com/daishihmr/vox.js",
+    "main": "build/vox.js",
+    "scripts": {
+        "dev": "npx grunt && npx run ./test/main.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/daishihmr/vox.js.git"
+    },
+    "keywords": [
+        "three.js",
+        "MagicaVoxel",
+        "3d",
+        "voxel"
+    ],
+    "types": "build/vox.js.d.ts",
+    "author": "daishihmr",
+    "license": "MIT",
+    "devDependencies": {
+        "express": "^4.16.4",
+        "grunt": "^0.4.5",
+        "grunt-contrib-concat": "^0.5.1",
+        "grunt-contrib-uglify": "^0.9.1",
+        "grunt-contrib-watch": "^0.6.1"
+    }
 }
