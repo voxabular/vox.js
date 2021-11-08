@@ -62,6 +62,17 @@ export declare interface ParseResult {
     palette: Array<Color>; // palette data
 }
 
+
+export declare interface SimpleVoxData {
+    palette: Color[];
+    voxels: Voxel[];
+    size: {
+        x: number;
+        y: number;
+        z: number;
+    };
+}
+
 export declare class Parser {
     parse(url: string): Promise<ParseResult>
     parseUint8Array(array: Uint8Array, callback: (error: any, result: ParseResult) => void): void
